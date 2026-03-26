@@ -1,3 +1,5 @@
+If you use this code, please cite: Sodium-enriched nectar alters plant-pollinator interactions but does not uniformly attract pollinators.
+
 Open research: The data from this study are openly available in the Dryad data repository at .
 
 # Introduction
