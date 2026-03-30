@@ -27,8 +27,6 @@ nectar_meta <- read.csv("data/nectar_2025.csv")
 icp <- read.csv("data/2025_sodium.csv")
 
 # Clean datasets
-leaf_meta <- leaf_meta %>%
-  select(-notes)
 leaf_meta$sample <- paste(leaf_meta$plot_id, leaf_meta$leaf_id,sep="_")
 leaf_meta$type <- "leaf"
 

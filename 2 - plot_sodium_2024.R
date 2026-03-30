@@ -65,10 +65,6 @@ leaf$pair_id <- sub("_[^_]+$", "", leaf$plot_id)
 # Change date to factor
 soil$date_factor <- as.factor(soil$date)
 
-# Remove plant_id column
-soil <- soil %>%
-  dplyr::select(-plant_id)
-
 # Plots ----
 ## Soil plot ----
 soil.plot <- soil %>%
