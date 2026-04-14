@@ -813,8 +813,8 @@ Anova(pol_abun_hyp.rich.add, type = "II")
 # Abundance model
 pred.abun <- ggpredict(pol_abun.div.add, terms = "trt")
 abun.plot <- ggplot() +
-  geom_sina(data = model.frame(pol_abun.div.add), aes(x = trt, y = pol_abundance, color = trt), alpha = 0.1, orientation = "x") +
-  geom_point(data = pred.abun, aes(x = x, y = predicted, color = x), size = 3) +
+  geom_sina(data = model.frame(pol_abun.div.add), aes(x = trt, y = pol_abundance, color = trt, shape = trt), alpha = 0.1, orientation = "x") +
+  geom_point(data = pred.abun, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
   geom_errorbar(data = pred.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   labs(x = "Treatment", y = "Pollinator abundance", color = "Treatment") +
@@ -825,8 +825,8 @@ abun.plot <- ggplot() +
 # Richness model
 pred.rich <- ggpredict(pol_group_rich.add.div.zi, terms = "trt")
 rich.plot <- ggplot() +
-  geom_sina(data = model.frame(pol_group_rich.add.div.zi), aes(x = trt, y = pol_group_richness, color = trt), alpha = 0.1, orientation = "x") +
-  geom_point(data = pred.rich, aes(x = x, y = predicted, color = x), size = 3) +
+  geom_sina(data = model.frame(pol_group_rich.add.div.zi), aes(x = trt, y = pol_group_richness, color = trt, shape = trt), alpha = 0.1, orientation = "x") +
+  geom_point(data = pred.rich, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
   geom_errorbar(data = pred.rich, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   labs(x = "Treatment", y = "Pollinator group richness", color = "Treatment") +
@@ -854,6 +854,21 @@ plot_model(pol_filter.div,
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(text = element_text(size = 15)) +
   scale_x_discrete(limits = c("bumble bee", "carpenter bee", "fly", "green sweat bee", "hairy belly bee", "honey bee", "lepidopteran", "medium dark bee", "striped sweat bee", "tiny dark bee", "wasp"))
+dev.off()
+
+pred.groups <- ggpredict(pol_filter.div, terms = c("pollinator_groups", "trt"))
+group.plot <- ggplot() +
+  geom_point(data = pred.groups, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.5)) +
+  geom_errorbar(data = pred.groups, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
+  labs(x = "Pollinator groups", y = "Pollinator abundance", color = "Treatment", shape = "Treatment") +
+  theme_bw() +
+  theme(text = element_text(size = 15)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(labels = c("bumble bee", "carpenter bee", "fly", "green sweat bee", "hairy belly bee", "honey bee", "lepidopteran", "medium dark bee", "striped sweat bee", "tiny dark bee", "wasp"))
+
+pdf("plot_fig_2_report.pdf", width = 7, height = 7)
+(abun.plot + rich.plot) / group.plot + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
 dev.off()
 
 ## Figure S2 ----
