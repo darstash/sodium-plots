@@ -1040,12 +1040,21 @@ ggplot(data=mds.scores2) +
   labs(color = "treatment") +
   scale_color_manual(values = c("#e41a1c", "#377eb8"))
 
+# Plot mean values by plot id
+mds.scores.mean2 <- mds.scores2 %>%
+  group_by(plot_id, trt) %>%
+  summarize(mean.NMDS1 = mean(NMDS1),
+            mean.NMDS2 = mean(NMDS2))
+
 pol.nmds.mean <- ggplot(data=mds.scores.mean2) + 
   stat_ellipse(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt)) +
-  geom_point(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt), size = 4, alpha = 0.5) +
+  geom_point(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt, shape = trt), size = 3, alpha = 0.5) +
   theme_bw() +
-  labs(x = "NMDS1", y = "NMDS2", color = "treatment") +
-  scale_color_manual(values = c("#e41a1c", "#377eb8"))
+  labs(x = "NMDS1", y = "NMDS2", color = "treatment", shape = "treatment") +
+  scale_color_manual(values = c("#e41a1c", "#377eb8")) +
+  coord_equal() +
+  scale_y_continuous(breaks=c(-0.4, 0, 0.4)) +
+  scale_x_continuous(breaks=c(-0.4, 0, 0.4))
 
 # Stress plot # Better
 stressplot(pol.mds2, lwd = 0.5)
@@ -1135,10 +1144,13 @@ floral.mds.scores.mean2 <- floral.mds.scores2 %>%
 
 floral.nmds.mean <- ggplot(data=floral.mds.scores.mean2) + 
   stat_ellipse(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt)) +
-  geom_point(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt), size = 4, alpha = 0.5) +
+  geom_point(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt, shape = trt), size = 3, alpha = 0.5) +
   theme_bw() +
-  labs(x = "NMDS1", y = "NMDS2", color = "treatment") +
-  scale_color_manual(values = c("#e41a1c", "#377eb8"))
+  labs(x = "NMDS1", y = "NMDS2", color = "treatment", shape = "treatment") +
+  scale_color_manual(values = c("#e41a1c", "#377eb8")) +
+  coord_equal() +
+  scale_y_continuous(breaks=c(-1, 0, 1)) +
+  scale_x_continuous(breaks=c(-1, 0, 1))
 
 # Stress plot # Still has weird uptick at the end but better
 stressplot(floral.mds2, lwd = 0.5)
@@ -1159,4 +1171,6 @@ floral.adon7 # marginally significant, but now not accounting for repeated sampl
 
 ## NMDS Figure ----
 # Figure 5
-pol.nmds.mean + floral.nmds.mean + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
+jpeg("plot_fig_s4.jpeg", width = 7, height = 4, units = "in", res = 300)
+pol.nmds.mean + floral.nmds.mean + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A')
+dev.off()
