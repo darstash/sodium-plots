@@ -834,28 +834,6 @@ rich.plot <- ggplot() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
-## Figure 2 ----
-pdf("plot_fig_2.pdf", width = 7, height = 4)
-abun.plot + rich.plot + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
-dev.off()
-
-## Figure 3 ----
-pdf("plot_fig_3.pdf", width = 7, height = 4)
-plot_model(pol_filter.div,
-           type = "pred",
-           terms = c("pollinator_groups", "trt"),
-           show.data = F,
-           jitter = TRUE,
-           title = "",
-           dodge = 0.5,
-           ci.lvl = 0.95) +
-  theme_bw() +
-  labs(x = "Pollinator groups", y = "Pollinator abundance", color = "Treatment") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(text = element_text(size = 15)) +
-  scale_x_discrete(limits = c("bumble bee", "carpenter bee", "fly", "green sweat bee", "hairy belly bee", "honey bee", "lepidopteran", "medium dark bee", "striped sweat bee", "tiny dark bee", "wasp"))
-dev.off()
-
 pred.groups <- ggpredict(pol_filter.div, terms = c("pollinator_groups", "trt"))
 group.plot <- ggplot() +
   geom_point(data = pred.groups, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.5)) +
@@ -867,129 +845,122 @@ group.plot <- ggplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_discrete(labels = c("bumble bee", "carpenter bee", "fly", "green sweat bee", "hairy belly bee", "honey bee", "lepidopteran", "medium dark bee", "striped sweat bee", "tiny dark bee", "wasp"))
 
+## Figure 2 ----
 pdf("plot_fig_2_report.pdf", width = 7, height = 7)
 (abun.plot + rich.plot) / group.plot + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
 dev.off()
 
-## Figure S2 ----
-emmip(pol_filter.div, trt ~ week | pollinator_groups, cov.reduce = range) +
-  theme_bw() +
+## Figure S3 ----
+emmip.plot <- emmip(pol_filter.div, trt ~ week | pollinator_groups,
+            cov.reduce = range, plotit = FALSE)
+ggplot(emmip.plot, aes(x = week, y = yvar, color = trt, linetype = trt)) +
+  geom_line() +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
-  labs(color = "treatment") +
+  scale_linetype_manual(values = c("control" = 1,"sodium" = 2)) +
+  theme_bw() +
+  labs(color = "Treatment", linetype = "Treatment", y = "Linear prediction") +
   facet_wrap(~ pollinator_groups, labeller = as_labeller(
-               c(Bombus = "bumble bee", carpenter_bee = "carpenter bee", fly = "fly", green_sweat_bee = "green sweat bee", hairy_belly_bee = "hairy belly bee", honey_bee = "honey bee", Lepidoptera = "lepidopteran", medium_dark_bee = "medium dark bee", striped_sweat_bee = "striped sweat bee", tiny_dark_bee = "tiny dark bee", wasp = "wasp"))) +
+    c(Bombus = "bumble bee", carpenter_bee = "carpenter bee", fly = "fly", green_sweat_bee = "green sweat bee", hairy_belly_bee = "hairy belly bee", honey_bee = "honey bee", Lepidoptera = "lepidopteran", medium_dark_bee = "medium dark bee", striped_sweat_bee = "striped sweat bee", tiny_dark_bee = "tiny dark bee", wasp = "wasp"))) +
   theme(text = element_text(size = 15))
 
 ## Specific flower models ----
 ## Securigera varia # Nectar on outside of calyx, pollen
-sec_var.plot <- plot_model(pol_abun_sec_var_z.int,
-           type = "pred",
-           terms = c("pollinator_groups", "trt"),
-           show.data = F,
-           jitter = TRUE,
-           title = "Securigera varia",
-           dodge = 0.5,
-           ci.lvl = 0.95) +
+pred.sec.abun <- ggpredict(pol_abun_sec_var_z.int, terms = c("pollinator_groups", "trt"))
+sec_var.plot <- ggplot() +
+  geom_point(data = pred.sec.abun, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.5)) +
+  geom_errorbar(data = pred.sec.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   theme_bw() +
-  labs(y = "Pollinator abundance", color = "Treatment", x = "") +
+  labs(y = "Pollinator abundance", color = "Treatment", x = "", shape = "Treatment", title = "Securigera varia") +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(plot.title = element_text(size = 12, face="italic")) +
-  scale_x_discrete(limits = c("bumble bee", "fly", "honey bee", "tiny dark bee"))
+  theme(plot.title = element_text(size = 12, face = "italic")) +
+  scale_x_discrete(labels = c("bumble bee", "fly", "honey bee", "tiny dark bee"))
 
 pred.sec <- ggpredict(pol_abun_sec_var.rich.add, terms = "trt")
 sec_var_rich.plot <- ggplot() +
-  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt), alpha = 0.2, orientation = "x") +
-  geom_point(data = pred.sec, aes(x = x, y = predicted, color = x), size = 3) +
+  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt, shape = trt), alpha = 0.2, orientation = "x") +
+  geom_point(data = pred.sec, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
   geom_errorbar(data = pred.sec, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
-  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment") +
+  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
 # Monarda fistulosa # Nectar and pollen
-mon.plot <- plot_model(pol_abun_mon.int,
-           type = "pred",
-           terms = c("pollinator_groups", "trt"),
-           show.data = F,
-           jitter = TRUE,
-           title = "Monarda fistulosa",
-           dodge = 0.5,
-           ci.lvl = 0.95)  +
+mon.abun <- ggpredict(pol_abun_mon.int, terms = c("pollinator_groups", "trt"))
+mon.plot <- ggplot() +
+  geom_point(data = mon.abun, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.8)) +
+  geom_errorbar(data = mon.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   theme_bw() +
-  labs(y = "Pollinator abundance", color = "Treatment", x = "") +
+  labs(y = "Pollinator abundance", color = "Treatment", x = "", shape = "Treatment", title = "Monarda fistulosa") +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(plot.title = element_text(size = 12, face="italic")) +
-  scale_x_discrete(limits = c("bumble bee", "fly", "green sweat bee", "honey bee", "striped sweat bee", "tiny dark bee", "wasp"))
+  theme(plot.title = element_text(size = 12, face = "italic")) +
+  scale_x_discrete(labels = c("bumble bee", "fly", "green sweat bee", "honey bee", "striped sweat bee", "tiny dark bee", "wasp"))
 
 pred.mon <- ggpredict(pol_abun_mon.rich.add, terms = "trt")
 mon_rich.plot <- ggplot() +
-  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt), alpha = 0.2, orientation = "x") +
-  geom_point(data = pred.mon, aes(x = x, y = predicted, color = x), size = 3) +
+  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt, shape = trt), alpha = 0.2, orientation = "x") +
+  geom_point(data = pred.mon, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
   geom_errorbar(data = pred.mon, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
-  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment") +
+  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
 # Penstemon digitalis # Nectar and pollen
-pen.plot <- plot_model(pol_abun_pen.int,
-           type = "pred",
-           terms = c("pollinator_groups", "trt"),
-           show.data = F,
-           jitter = TRUE,
-           title = "Penstemon digitalis",
-           dodge = 0.5,
-           ci.lvl = 0.95) +
+pen.abun <- ggpredict(pol_abun_pen.int, terms = c("pollinator_groups", "trt"))
+pen.plot <- ggplot() +
+  geom_point(data = pen.abun, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.6)) +
+  geom_errorbar(data = pen.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.6)) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   theme_bw() +
-  labs(y = "Pollinator abundance", color = "Treatment", x = "") +
+  labs(y = "Pollinator abundance", color = "Treatment", x = "", shape = "Treatment", title = "Penstemon digitalis") +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(plot.title = element_text(size = 12, face="italic")) +
-  scale_x_discrete(limits = c("bumble bee", "fly", "green sweat bee", "tiny dark bee"))
+  theme(plot.title = element_text(size = 12, face = "italic")) +
+  scale_x_discrete(labels = c("bumble bee", "fly", "green sweat bee", "tiny dark bee"))
 
 pred.pen <- ggpredict(pol_abun_pen.rich.add, terms = "trt")
 pen_rich.plot <- ggplot() +
-  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt), alpha = 0.2, orientation = "x") +
-  geom_point(data = pred.pen, aes(x = x, y = predicted, color = x), size = 3) +
+  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt, shape = trt), alpha = 0.2, orientation = "x") +
+  geom_point(data = pred.pen, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
   geom_errorbar(data = pred.pen, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
-  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment") +
+  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
 # Hypericum perforatum # Only pollen
-hyp.plot <- plot_model(pol_abun_hyp.int,
-           type = "pred",
-           terms = c("pollinator_groups", "trt"),
-           show.data = F,
-           jitter = TRUE,
-           title = "Hypericum perforatum",
-           dodge = 0.5,
-           ci.lvl = 0.95) +
+hyp.abun <- ggpredict(pol_abun_hyp.int, terms = c("pollinator_groups", "trt"))
+hyp.plot <- ggplot() +
+  geom_point(data = hyp.abun, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.5)) +
+  geom_errorbar(data = hyp.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   theme_bw() +
-  labs(y = "Pollinator abundance", color = "Treatment", x = "") +
+  labs(y = "Pollinator abundance", color = "Treatment", x = "", shape = "Treatment", title = "Hypericum perforatum") +
   theme(text = element_text(size = 15)) +
+  theme(plot.title = element_text(size = 12, face = "italic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(plot.title = element_text(size = 12, face="italic")) +
-  scale_x_discrete(limits = c("bumble bee", "fly", "tiny dark bee"))
+  scale_x_discrete(labels = c("bumble bee", "fly", "tiny dark bee"))
 
 pred.hyp <- ggpredict(pol_abun_hyp.rich.add, terms = "trt")
 hyp_rich.plot <- ggplot() +
-  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt), alpha = 0.2, orientation = "x") +
-  geom_point(data = pred.hyp, aes(x = x, y = predicted, color = x), size = 3) +
+  geom_sina(data = model.frame(pol_abun_hyp.rich.add), aes(x = trt, y = pol_group_richness, color = trt, shape = trt), alpha = 0.2, orientation = "x") +
+  geom_point(data = pred.hyp, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
   geom_errorbar(data = pred.hyp, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
-  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment") +
+  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
-## Figure 4 ----
+## Figure 3 ----
 pdf("plot_fig_4.1.pdf", width = 11, height = 6)
 mon.plot + sec_var.plot + hyp.plot + pen.plot + mon_rich.plot + sec_var_rich.plot + hyp_rich.plot + pen_rich.plot + plot_layout(ncol = 4) + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
 dev.off()
@@ -1062,11 +1033,12 @@ mds.scores.mean2 <- mds.scores2 %>%
             mean.NMDS2 = mean(NMDS2))
 
 pol.nmds.mean <- ggplot(data=mds.scores.mean2) + 
-  stat_ellipse(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt)) +
+  stat_ellipse(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt, linetype = trt)) +
   geom_point(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt, shape = trt), size = 3, alpha = 0.5) +
   theme_bw() +
-  labs(x = "NMDS1", y = "NMDS2", color = "treatment", shape = "treatment") +
+  labs(x = "NMDS1", y = "NMDS2", color = "Treatment", shape = "Treatment", linetype = "Treatment") +
   scale_color_manual(values = c("#e41a1c", "#377eb8")) +
+  scale_linetype_manual(values = c(1, 2)) +
   coord_equal() +
   scale_y_continuous(breaks=c(-0.4, 0, 0.4)) +
   scale_x_continuous(breaks=c(-0.4, 0, 0.4))
@@ -1158,11 +1130,12 @@ floral.mds.scores.mean2 <- floral.mds.scores2 %>%
             mean.NMDS2 = mean(NMDS2))
 
 floral.nmds.mean <- ggplot(data=floral.mds.scores.mean2) + 
-  stat_ellipse(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt)) +
+  stat_ellipse(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt, linetype = trt)) +
   geom_point(aes(x=mean.NMDS1,y=mean.NMDS2,color=trt, shape = trt), size = 3, alpha = 0.5) +
   theme_bw() +
-  labs(x = "NMDS1", y = "NMDS2", color = "treatment", shape = "treatment") +
+  labs(x = "NMDS1", y = "NMDS2", color = "Treatment", shape = "Treatment", linetype = "Treatment") +
   scale_color_manual(values = c("#e41a1c", "#377eb8")) +
+  scale_linetype_manual(values = c(1, 2)) +
   coord_equal() +
   scale_y_continuous(breaks=c(-1, 0, 1)) +
   scale_x_continuous(breaks=c(-1, 0, 1))
@@ -1184,7 +1157,7 @@ floral.adon6
 floral.adon7 <- adonis2(floral.comm.data2[7:33] ~ trt, method = "bray", data = floral.comm.data2, strata = floral.comm.data2$pair_id, permutations = 4999)
 floral.adon7 # marginally significant, but now not accounting for repeated sampling
 
-## NMDS Figure ----
+## Figure S4 ----
 # Figure 5
 jpeg("plot_fig_s4.jpeg", width = 7, height = 4, units = "in", res = 300)
 pol.nmds.mean + floral.nmds.mean + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A')
