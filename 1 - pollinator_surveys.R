@@ -283,30 +283,19 @@ barplot(table(cut(pol_floral$pol_abundance, c(0, seq(1, 70, 1)), right = FALSE))
 
 pol_abun.pois <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "poisson")
 pol_abun.nb <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2")
-pol_abun.nb.add <- glmmTMB(pol_abundance ~ trt + week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2")
-pol_abun.nb.zi <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ 1)
-pol_abun.nb.zi2 <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance)
-pol_abun.nb.add.zi2 <- glmmTMB(pol_abundance ~ trt + week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance)
 pol_abun.nb.zi3 <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
 pol_abun.nb.add.zi3 <- glmmTMB(pol_abundance ~ trt + week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
-pol_abun.pois.zi3 <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "poisson", ziformula = ~ floral_abundance + week)
 
 # Add floral richness
 pol_abun.div <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
 pol_abun.div.add <- glmmTMB(pol_abundance ~ trt + week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
 
 anova(pol_abun.pois, pol_abun.nb) # nb better
-anova(pol_abun.nb, pol_abun.nb.add) # additive nb better
-anova(pol_abun.nb, pol_abun.nb.zi) # regular nb better
-anova(pol_abun.nb, pol_abun.nb.zi2) # zi dependent on floral abundance better than nb
-anova(pol_abun.nb.add.zi2, pol_abun.nb.zi2) # additive better
-anova(pol_abun.nb.zi2, pol_abun.nb.zi3) # zi dependent on floral abundance and week
 anova(pol_abun.nb.add.zi3, pol_abun.nb.zi3) # additive better
-anova(pol_abun.pois.zi3, pol_abun.nb.zi3) # nb better
 anova(pol_abun.div, pol_abun.nb.zi3) # diversity model better!
 anova(pol_abun.div.add, pol_abun.div) # additive diversity model better
 
-AICctab(pol_abun.pois, pol_abun.nb, pol_abun.nb.zi, pol_abun.nb.zi2, pol_abun.nb.zi3, pol_abun.nb.add.zi3, pol_abun.nb.add, pol_abun.nb.add.zi2, pol_abun.pois.zi3, pol_abun.div.add, pol_abun.div)
+AICctab(pol_abun.pois, pol_abun.nb, pol_abun.nb.zi3, pol_abun.nb.add.zi3, pol_abun.div.add, pol_abun.div)
 
 # Interaction model with diversity
 simres <- simulateResiduals(pol_abun.div)
@@ -337,16 +326,12 @@ barplot(table(cut(pol_groups_wide$pol_group_richness, c(0, seq(1, 8, 1)), right 
 pol_group_rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson")
 pol_group_rich.add.div <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson")
 pol_group_rich.add.div.zi <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
-pol_group_rich.nb.add.div <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "nbinom2", ziformula = ~ floral_abundance + week)
 pol_group_rich.div.zi <- glmmTMB(pol_group_richness ~ trt*week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
-pol_group_rich.rmw <- glmmTMB(pol_group_richness ~ trt + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson")
-
 
 anova(pol_group_rich.add, pol_group_rich.add.div) # richness better
 anova(pol_group_rich.add.div, pol_group_rich.add.div.zi) # zi better
-anova(pol_group_rich.add.div.zi, pol_group_rich.rmw) # week better
 
-AICctab(pol_group_rich.add, pol_group_rich.add.div, pol_group_rich.add.div.zi, pol_group_rich.div.zi, pol_group_rich.rmw)
+AICctab(pol_group_rich.add, pol_group_rich.add.div, pol_group_rich.add.div.zi, pol_group_rich.div.zi)
 
 # Look at interaction model
 summary(pol_group_rich.div.zi) # drop interaction for better fitting model
@@ -378,34 +363,20 @@ pol_groups_filter %>%
 barplot(table(cut(pol_groups_filter$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
 pol_filter.pois <- glmmTMB(pol_abundance ~ trt + pollinator_groups + scale(floral_abundance) + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "poisson")
-pol_filter.nb.int2 <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(floral_abundance) + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2")
 pol_filter.nb <- glmmTMB(pol_abundance ~ trt + pollinator_groups + scale(floral_abundance) + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2")
-pol_filter.nb.int.zi <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(floral_abundance) + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~1)
-pol_filter.nb.int.zi2 <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(floral_abundance) + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance)
 pol_filter.nb.int.zi3 <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(floral_abundance) + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
 pol_filter.nb.int2.zi3 <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
-pol_filter.nb.int2.zi2 <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance)
-pol_filter.pois.int2.zi3 <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "poisson", ziformula =  ~ floral_abundance + week)
-pol_filter.nb.int2.zi3.r <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id) + (1|surveyor), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
-pol_filter.nb.no_group <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
 
 # Try model with floral diversity
 pol_filter.div <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(floral_abundance) + floral_richness + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
 pol_filter.div2 <- glmmTMB(pol_abundance ~ trt*pollinator_groups + pollinator_groups*week + scale(floral_abundance) + floral_richness + week + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
 
 anova(pol_filter.pois, pol_filter.nb) # nb better
-anova(pol_filter.nb, pol_filter.nb.int2) # interaction model not better, but what we need
-anova(pol_filter.nb.int2, pol_filter.nb.int.zi) # zi not better
-anova(pol_filter.nb.int2, pol_filter.nb.int.zi2) # floral abundance zi better
-anova(pol_filter.nb.int.zi2, pol_filter.nb.int.zi3) # floral abundance and week zi better
 anova(pol_filter.nb.int.zi3, pol_filter.nb.int2.zi3) # three way interaction better, makes biological sense
-anova(pol_filter.nb.int2.zi2, pol_filter.nb.int2.zi3) # three way interaction better with zi3
-anova(pol_filter.pois.int2.zi3, pol_filter.nb.int2.zi3) # nb better
-anova(pol_filter.nb.no_group, pol_filter.nb.int2.zi3) # having group is better
 anova(pol_filter.div, pol_filter.nb.int2.zi3) # adding richness is way better
 anova(pol_filter.div2, pol_filter.div) # three way diversity model better
 
-AICctab(pol_filter.pois, pol_filter.nb, pol_filter.nb.int2, pol_filter.nb.int.zi, pol_filter.nb.int.zi2, pol_filter.nb.int.zi3, pol_filter.nb.int2.zi3, pol_filter.nb.int2.zi2, pol_filter.pois.int2.zi3, pol_filter.nb.no_group, pol_filter.div, pol_filter.div2)
+AICctab(pol_filter.pois, pol_filter.nb, pol_filter.nb.int.zi3, pol_filter.nb.int2.zi3, pol_filter.div, pol_filter.div2)
 # Anova and AICc conflict
 
 # Model checks
@@ -536,21 +507,8 @@ pol_network_floral_sec_filter_zero %>%
 
 barplot(table(cut(pol_network_floral_sec_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
-pol_abun_sec_var_z <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2", ziformula = ~1)
-# pol_abun_sec_var_z.w <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Securigera_varia) + scale(floral_abundance) + week + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2", ziformula = ~1) # Failed to converge with week
-fixef(pol_abun_sec_var_z) # Issue with ZI
-# pol_abun_sec_var_z.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Securigera_varia) + scale(floral_abundance) + week + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "poisson", ziformula = ~floral_abundance)
-# summary(pol_abun_sec_var_z.pois) # Dispersion parameter less than 1
-pol_abun_sec_var_z.add <- glmmTMB(pol_abundance ~ trt + pollinator_groups + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2", ziformula = ~1)
-pol_abun_sec_var_z.add.w <- glmmTMB(pol_abundance ~ trt + pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2", ziformula = ~1)
-# pol_abun_sec_var_z.add.zi <- glmmTMB(pol_abundance ~ trt + pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
-pol_abun_sec_var_z.add.nzi <- glmmTMB(pol_abundance ~ trt + pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2")
+# Final model
 pol_abun_sec_var_z.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2")
-# pol_abun_sec_var_z.int.zi <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
-
-
-AICctab(pol_abun_sec_var_z, pol_abun_sec_var_z.add, pol_abun_sec_var_z.add.w, pol_abun_sec_var_z.int, pol_abun_sec_var_z.add.nzi)
-# But need to use same interaction model as other flower species
 
 # Model checks
 simres2 <- simulateResiduals(pol_abun_sec_var_z.int)
@@ -611,18 +569,9 @@ pol_network_floral_mon_filter_zero %>%
 
 barplot(table(cut(pol_network_floral_mon_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
-# pol_abun_mon <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + week + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
-# pol_abun_mon <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + week + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
-# pol_abun_eri.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + week + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "poisson")
 pol_abun_mon <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
 pol_abun_mon.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "poisson")
-# pol_abun_mon.add <- glmmTMB(pol_abundance ~ trt + pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
-# pol_abun_mon.add.w <- glmmTMB(pol_abundance ~ trt + pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + week + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
-# pol_abun_mon.add.zi <- glmmTMB(pol_abundance ~ trt + pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2", ziformula = ~1)
-# pol_abun_mon.add.w2 <- glmmTMB(pol_abundance ~ trt + pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
-# pol_abun_mon.add.w2.zi <- glmmTMB(pol_abundance ~ trt + pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
 pol_abun_mon.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
-# pol_abun_mon.int.zi <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
 
 AICctab(pol_abun_mon, pol_abun_mon.pois, pol_abun_mon.int)
 
@@ -688,13 +637,9 @@ barplot(table(cut(pol_network_floral_pen_filter_zero$pol_abundance, c(0, seq(1, 
 
 pol_abun_pen.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
 pol_abun_pen.int.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "poisson")
-# pol_abun_pen <- glmmTMB(pol_abundance ~ trt*pollinator_groups + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
-pol_abun_pen.int.zi <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
 pol_abun_pen.add <- glmmTMB(pol_abundance ~ trt + pollinator_groups + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
-pol_abun_pen <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
-# pol_abun_pen.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "poisson")
 
-AICctab(pol_abun_pen.int, pol_abun_pen, pol_abun_pen.int.pois, pol_abun_pen.int.zi, pol_abun_pen.add)
+AICctab(pol_abun_pen.int, pol_abun_pen.int.pois, pol_abun_pen.add)
 anova(pol_abun_pen.add, pol_abun_pen.int) # int better
 
 # Model checks
@@ -762,17 +707,10 @@ pol_network_floral_hyp_filter_zero %>%
 
 barplot(table(cut(pol_network_floral_hyp_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
-# With zeros
 pol_abun_hyp.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
-# pol_abun_hyp.int.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "poisson")
-pol_abun_hyp.int.zi <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
-pol_abun_hyp.int.zi.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "poisson", ziformula = ~floral_abundance)
 pol_abun_hyp <- glmmTMB(pol_abundance ~ trt*pollinator_groups + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
-# pol_abun_hyp.add <- glmmTMB(pol_abundance ~ trt + pollinator_groups + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
-# pol_abun_hyp.add.pois <- glmmTMB(pol_abundance ~ trt + pollinator_groups + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "poisson")
-pol_abun_hyp.add.zi <- glmmTMB(pol_abundance ~ trt + pollinator_groups + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2", ziformula = ~floral_abundance)
 
-AICctab(pol_abun_hyp.int, pol_abun_hyp.int.zi, pol_abun_hyp, pol_abun_hyp.add.zi, pol_abun_hyp.int.zi.pois)
+AICctab(pol_abun_hyp.int, pol_abun_hyp)
 
 # Model checks
 simres2 <- simulateResiduals(pol_abun_hyp.int)
