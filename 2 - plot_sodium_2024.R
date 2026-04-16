@@ -78,13 +78,14 @@ soil.plot <- soil %>%
 
 ## Leaf plot ----
 leaf.plot <- leaf %>%
-  ggplot(aes(x = trt, y = ug_na_g_leaf_powder, col = species)) +
+  ggplot(aes(x = trt, y = ug_na_g_leaf_powder, col = species, shape = species)) +
   geom_sina(alpha = 0.3) +
   stat_summary(fun.data = "mean_cl_boot", position = position_dodge2(0.7)) +
   scale_y_log10() +
   annotation_logticks(sides = "l") +
-  labs(y = "Leaf sodium (ppm)", x = "Treatment", col = NULL) +
+  labs(y = "Leaf sodium (ppm)", x = "Treatment", col = NULL, shape = NULL) +
   scale_x_discrete(labels=c("control", "sodium")) +
+  scale_shape_manual(values = c(15, 19, 17)) +
   theme_bw() +
   theme(text = element_text(size = 15)) +
   scale_color_brewer(palette = "Dark2") +

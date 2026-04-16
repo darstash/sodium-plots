@@ -19,6 +19,7 @@ library(ggforce)
 library(patchwork)
 library(cowplot)
 library(emmeans)
+library(ggeffects)
 
 # Data cleaning ----
 # Load data
@@ -68,10 +69,11 @@ data_av$nectar_ln <- log(data_av$nectar)
 # Plots ----
 ## Nectar ----
 nectar.plot <- data_av %>%
-  ggplot(aes(x = treatment, y = nectar, col = species)) +
+  ggplot(aes(x = treatment, y = nectar, col = species, shape = species)) +
   geom_sina(alpha = 0.5) +
   stat_summary(fun.data = "mean_cl_boot", position = position_dodge2(0.7)) +
   labs(y = "Nectar sodium (ppm)", x = "Treatment") +
+  scale_shape_manual(values = c(19, 17)) +
   theme_bw() +
   theme(text = element_text(size = 15)) +
   theme(legend.position = "none") +
@@ -192,17 +194,17 @@ anova(cor_sp.lmer.ln.reml, cor_int.lmer.ln.reml) # int marginally better
 
 # Plot model ----
 ## Correlation ----
-cor.plot <- plot_model(cor_sp.lmer.ln,
-           type = "pred",
-           terms = c("leaf_ln", "species"),
-           show.data = TRUE,
-           title = "",
-           jitter = c(0.1, 0),
-           colors = c("#d95f02", "#7570b3")) +
+pred.cor <- ggpredict(cor_sp.lmer.ln, terms = c("leaf_ln", "species"))
+cor.plot <- ggplot() +
+  geom_point(data = model.frame(cor_sp.lmer.ln), aes(x = leaf_ln, y = nectar_ln, color = species, shape = species), alpha = 0.5, size = 2) +
+  geom_line(data = pred.cor, aes(x = x, y = predicted, color = group), size = 1) +
+  geom_ribbon(data = pred.cor, aes(x = x, ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2) +
+  scale_color_manual(values = c("Monarda fistulosa" = "#d95f02","Penstemon digitalis" = "#7570b3")) +
+  scale_fill_manual(values = c("Monarda fistulosa" = "#d95f02","Penstemon digitalis" = "#7570b3")) +
   labs(x = "ln(Leaf sodium (ppm))", y = "ln(Nectar sodium (ppm))") +
   theme_bw() +
-  theme(text = element_text(size = 15)) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15))
 
 # Figure 1 ----
 legend <- get_legend(leaf.plot)
