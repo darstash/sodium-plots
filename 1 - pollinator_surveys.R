@@ -460,14 +460,13 @@ colSums(floral_summary2[,c(5:32)])
 # What are most interacted with flowers?
 pol_network_floral %>%
   group_by(flower_sp) %>%
-  summarize(n = n()) %>%
+  summarize(n = sum(pol_abundance)) %>%
   arrange(-n)
-# Monarda fistulosa         656
-# Securigera varia          227
-# Hypericum perforatum      226
-# Penstemon digitalis       222
-# Erigeron annuus           208
-# Achillea millefolium      189
+# Monarda fistulosa         2943
+# Penstemon digitalis       695
+# Securigera varia          654
+# Erigeron annuus           606
+# Hypericum perforatum      490
 
 # Subset by top five flowers
 pol_network_floral_filter <- pol_network_floral %>%
