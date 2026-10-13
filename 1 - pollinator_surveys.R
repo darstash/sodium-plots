@@ -507,7 +507,7 @@ pol_network_floral_sec_filter_zero %>%
 barplot(table(cut(pol_network_floral_sec_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
 # Final model
-pol_abun_sec_var_z.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2")
+pol_abun_sec_var_z.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2")
 
 # Model checks
 simres2 <- simulateResiduals(pol_abun_sec_var_z.int)
@@ -530,8 +530,8 @@ pol_network_floral_sec_rich %>%
 
 barplot(table(cut(pol_network_floral_sec_rich$pol_group_richness, c(0, seq(1, 7, 1)), right = FALSE)), space = 0)
 
-pol_abun_sec_var.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_rich, family = "poisson")
-pol_abun_sec_var.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Securigera_varia) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_sec_rich, family = "poisson")
+pol_abun_sec_var.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Securigera_varia) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_sec_rich, family = "poisson")
+pol_abun_sec_var.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Securigera_varia) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_sec_rich, family = "poisson")
 
 AICctab(pol_abun_sec_var.rich, pol_abun_sec_var.rich.add)
 anova(pol_abun_sec_var.rich.add, pol_abun_sec_var.rich)
@@ -568,9 +568,9 @@ pol_network_floral_mon_filter_zero %>%
 
 barplot(table(cut(pol_network_floral_mon_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
-pol_abun_mon <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
-pol_abun_mon.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "poisson")
-pol_abun_mon.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
+pol_abun_mon <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
+pol_abun_mon.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_mon_filter_zero, family = "poisson")
+pol_abun_mon.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
 
 AICctab(pol_abun_mon, pol_abun_mon.pois, pol_abun_mon.int)
 
@@ -596,8 +596,8 @@ pol_network_floral_mon_rich %>%
 
 barplot(table(cut(pol_network_floral_mon_rich$pol_group_richness, c(0, seq(1, 7, 1)), right = FALSE)), space = 0)
 
-pol_abun_mon.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_rich, family = "poisson")
-pol_abun_mon.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_mon_rich, family = "poisson")
+pol_abun_mon.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_mon_rich, family = "poisson")
+pol_abun_mon.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_mon_rich, family = "poisson")
 
 AICctab(pol_abun_mon.rich, pol_abun_mon.rich.add)
 anova(pol_abun_mon.rich.add, pol_abun_mon.rich)
@@ -634,9 +634,9 @@ pol_network_floral_pen_filter_zero %>%
 
 barplot(table(cut(pol_network_floral_pen_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
-pol_abun_pen.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
-pol_abun_pen.int.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "poisson")
-pol_abun_pen.add <- glmmTMB(pol_abundance ~ trt + pollinator_groups + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
+pol_abun_pen.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
+pol_abun_pen.int.pois <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_pen_filter_zero, family = "poisson")
+pol_abun_pen.add <- glmmTMB(pol_abundance ~ trt + pollinator_groups + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
 
 AICctab(pol_abun_pen.int, pol_abun_pen.int.pois, pol_abun_pen.add)
 anova(pol_abun_pen.add, pol_abun_pen.int) # int better
@@ -644,9 +644,6 @@ anova(pol_abun_pen.add, pol_abun_pen.int) # int better
 # Model checks
 simres2 <- simulateResiduals(pol_abun_pen.int)
 plot(simres2) # Good!
-
-simres2 <- simulateResiduals(pol_abun_pen.add)
-plot(simres2) # Bad, go with interactive model (that's our hypothesis anyways)
 
 summary(pol_abun_pen.int)
 Anova(pol_abun_pen.int, type = "III")
@@ -667,8 +664,8 @@ pol_network_floral_pen_rich %>%
 
 barplot(table(cut(pol_network_floral_pen_rich$pol_group_richness, c(0, seq(1, 7, 1)), right = FALSE)), space = 0)
 
-pol_abun_pen.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_rich, family = "poisson")
-pol_abun_pen.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_pen_rich, family = "poisson")
+pol_abun_pen.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_pen_rich, family = "poisson")
+pol_abun_pen.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_pen_rich, family = "poisson")
 
 AICctab(pol_abun_pen.rich, pol_abun_pen.rich.add)
 anova(pol_abun_pen.rich.add, pol_abun_pen.rich)
@@ -706,8 +703,8 @@ pol_network_floral_hyp_filter_zero %>%
 
 barplot(table(cut(pol_network_floral_hyp_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
 
-pol_abun_hyp.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
-pol_abun_hyp <- glmmTMB(pol_abundance ~ trt*pollinator_groups + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
+pol_abun_hyp.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
+pol_abun_hyp <- glmmTMB(pol_abundance ~ trt*pollinator_groups + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
 
 AICctab(pol_abun_hyp.int, pol_abun_hyp)
 
@@ -732,8 +729,8 @@ pol_network_floral_hyp_rich %>%
 
 barplot(table(cut(pol_network_floral_hyp_rich$pol_group_richness, c(0, seq(1, 7, 1)), right = FALSE)), space = 0)
 
-pol_abun_hyp.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_rich, family = "poisson")
-pol_abun_hyp.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|plot_id/pair_id), data = pol_network_floral_hyp_rich, family = "poisson")
+pol_abun_hyp.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_hyp_rich, family = "poisson")
+pol_abun_hyp.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_hyp_rich, family = "poisson")
 
 AICctab(pol_abun_hyp.rich, pol_abun_hyp.rich.add)
 anova(pol_abun_hyp.rich.add, pol_abun_hyp.rich)
@@ -744,6 +741,74 @@ plot(simres2) # ok
 
 summary(pol_abun_hyp.rich.add)
 Anova(pol_abun_hyp.rich.add, type = "II")
+
+### Erigeron annuus ----
+pol_network_floral_eri <- pol_network_floral %>%
+  filter(flower_sp == "Erigeron annuus" | (Erigeron_annuus > 0 & is.na(flower_sp)))
+
+# Look at number of pollinators in each group
+pol_network_floral_eri %>%
+  group_by(pollinator_groups) %>%
+  summarize(sum = sum(pol_abundance))
+
+# Remove pol groups with less than 20 interactions
+pol_network_floral_eri_filter <- pol_network_floral_eri %>%
+  filter((pollinator_groups == "Bombus" | pollinator_groups == "fly" | pollinator_groups == "striped_sweat_bee" | pollinator_groups == "tiny_dark_bee" | pollinator_groups == "wasp") %>% replace_na(TRUE))
+
+# Fill with zeros
+pol_network_floral_eri_filter$unique_id <- paste(pol_network_floral_eri_filter$plot_id, pol_network_floral_eri_filter$date)
+
+pol_network_floral_eri_filter_zero <- pol_network_floral_eri_filter %>%
+  ungroup() %>%
+  complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Erigeron_annuus, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
+  drop_na(pollinator_groups)
+
+# Variance >> mean for some groups
+pol_network_floral_eri_filter_zero %>%
+  group_by(pollinator_groups) %>%
+  summarize(mean.count = mean(pol_abundance), 
+            var.count = var(pol_abundance))
+
+barplot(table(cut(pol_network_floral_eri_filter_zero$pol_abundance, c(0, seq(1, 50, 4)), right = FALSE)), space = 0)
+
+pol_abun_eri.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Erigeron_annuus) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_eri_filter_zero, family = "nbinom2")
+pol_abun_eri <- glmmTMB(pol_abundance ~ trt*pollinator_groups + week + scale(Erigeron_annuus) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_eri_filter_zero, family = "nbinom2")
+
+AICctab(pol_abun_eri.int, pol_abun_eri)
+
+# Model checks
+simres2 <- simulateResiduals(pol_abun_eri.int)
+plot(simres2) # Good!
+
+summary(pol_abun_eri.int)
+Anova(pol_abun_eri.int, type = "III")
+
+# Richness
+# Drop NA values to get richness 
+pol_network_floral_eri_rich <- pol_network_floral_eri_filter %>%
+  group_by(plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, pol_group_richness, Erigeron_annuus, floral_abundance) %>%
+  summarize(pol_group_richness = first(pol_group_richness))
+
+# Mean > variance
+pol_network_floral_eri_rich %>%
+  group_by(trt) %>%
+  summarize(mean.count = mean(pol_group_richness), 
+            var.count = var(pol_group_richness))
+
+barplot(table(cut(pol_network_floral_eri_rich$pol_group_richness, c(0, seq(1, 7, 1)), right = FALSE)), space = 0)
+
+pol_abun_eri.rich <- glmmTMB(pol_group_richness ~ trt*week + scale(Erigeron_annuus) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_eri_rich, family = "poisson")
+pol_abun_eri.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Erigeron_annuus) + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_network_floral_eri_rich, family = "poisson")
+
+AICctab(pol_abun_eri.rich, pol_abun_eri.rich.add)
+anova(pol_abun_eri.rich.add, pol_abun_eri.rich)
+
+# Model checks
+simres2 <- simulateResiduals(pol_abun_eri.rich.add)
+plot(simres2) # ok
+
+summary(pol_abun_eri.rich.add)
+Anova(pol_abun_eri.rich.add, type = "II")
 
 
 # Plot models ----
@@ -812,6 +877,8 @@ sec_var.plot <- ggplot() +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(plot.title = element_text(size = 12, face = "italic")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   scale_x_discrete(labels = c("bumble bee", "fly", "honey bee", "tiny dark bee"))
 
 pred.sec <- ggpredict(pol_abun_sec_var.rich.add, terms = "trt")
@@ -823,7 +890,8 @@ sec_var_rich.plot <- ggplot() +
   labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 15)) +
+  theme(axis.title.y = element_blank())
 
 # Monarda fistulosa # Nectar and pollen
 mon.abun <- ggpredict(pol_abun_mon.int, terms = c("pollinator_groups", "trt"))
@@ -836,6 +904,7 @@ mon.plot <- ggplot() +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(plot.title = element_text(size = 12, face = "italic")) +
+  theme(axis.title.x = element_blank()) +
   scale_x_discrete(labels = c("bumble bee", "fly", "green sweat bee", "honey bee", "striped sweat bee", "tiny dark bee", "wasp"))
 
 pred.mon <- ggpredict(pol_abun_mon.rich.add, terms = "trt")
@@ -860,6 +929,8 @@ pen.plot <- ggplot() +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(plot.title = element_text(size = 12, face = "italic")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   scale_x_discrete(labels = c("bumble bee", "fly", "green sweat bee", "tiny dark bee"))
 
 pred.pen <- ggpredict(pol_abun_pen.rich.add, terms = "trt")
@@ -871,7 +942,8 @@ pen_rich.plot <- ggplot() +
   labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 15)) +
+  theme(axis.title.y = element_blank())
 
 # Hypericum perforatum # Only pollen
 hyp.abun <- ggpredict(pol_abun_hyp.int, terms = c("pollinator_groups", "trt"))
@@ -884,6 +956,8 @@ hyp.plot <- ggplot() +
   theme(text = element_text(size = 15)) +
   theme(plot.title = element_text(size = 12, face = "italic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   scale_x_discrete(labels = c("bumble bee", "fly", "tiny dark bee"))
 
 pred.hyp <- ggpredict(pol_abun_hyp.rich.add, terms = "trt")
@@ -895,11 +969,40 @@ hyp_rich.plot <- ggplot() +
   labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 15)) +
+  theme(axis.title.y = element_blank())
+
+# Erigeron annuus  # Pollen and nectar
+eri.abun <- ggpredict(pol_abun_eri.int, terms = c("pollinator_groups", "trt"))
+eri.plot <- ggplot() +
+  geom_point(data = eri.abun, aes(x = x, y = predicted, color = group, shape = group), size = 3, position = position_dodge(width = 0.5)) +
+  geom_errorbar(data = eri.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
+  theme_bw() +
+  labs(y = "Pollinator abundance", color = "Treatment", x = "", shape = "Treatment", title = "Erigeron annuus") +
+  theme(text = element_text(size = 15)) +
+  theme(plot.title = element_text(size = 12, face = "italic")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  scale_x_discrete(labels = c("bumble bee", "fly", "striped sweat bee", "tiny dark bee", "wasp"))
+
+pred.eri <- ggpredict(pol_abun_eri.rich.add, terms = "trt")
+eri_rich.plot <- ggplot() +
+  geom_sina(data = model.frame(pol_abun_eri.rich.add), aes(x = trt, y = pol_group_richness, color = trt, shape = trt), alpha = 0.2, orientation = "x") +
+  geom_point(data = pred.eri, aes(x = x, y = predicted, color = x, shape = x), size = 3) +
+  geom_errorbar(data = pred.eri, aes(x = x, ymin = conf.low, ymax = conf.high, color = x), width = 0) +
+  scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
+  labs(x = "Treatment", y = "Pollinator richness", color = "Treatment", shape = "Treatment") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15)) +
+  theme(axis.title.y = element_blank())
 
 ## Figure 3 ----
-pdf("plot_fig_4.1.pdf", width = 11, height = 6)
-mon.plot + sec_var.plot + hyp.plot + pen.plot + mon_rich.plot + sec_var_rich.plot + hyp_rich.plot + pen_rich.plot + plot_layout(ncol = 4) + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
+pdf("plot_fig_4.2.pdf", width = 11, height = 6)
+mon.plot + pen.plot + sec_var.plot + eri.plot + hyp.plot + mon_rich.plot + pen_rich.plot + sec_var_rich.plot + eri_rich.plot + hyp_rich.plot + plot_layout(ncol = 5) + plot_layout(guides = 'collect') + plot_annotation(tag_levels = "A") & theme(legend.position = "none") & 
+  theme(plot.margin = margin(2, 2, 2, 2, unit = "pt"))
 dev.off()
 
 
