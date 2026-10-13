@@ -220,6 +220,11 @@ pol_groups_wide <- pol_groups_wide %>%
   rowwise() %>%
   mutate(pol_group_richness = specnumber(c_across(bee:wasp)))
 
+# Add prairie
+pol_floral <- pol_floral %>%
+  mutate(prairie = sub("_.*", "", pair_id))
+pol_groups_wide <- pol_groups_wide %>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Exploratory plots ---- 
 # Pollinator abundance vs floral abundance
@@ -312,6 +317,19 @@ confint(pol_abun.div.add)
 simres <- simulateResiduals(pol_abun.div.add)
 plot(simres) # not perfect
 
+## Add prairie into random effects structure
+pol_abun.div.prairie <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
+pol_abun.div.add.prairie <- glmmTMB(pol_abundance ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
+
+anova(pol_abun.div.add.prairie, pol_abun.div.prairie)
+AICctab(pol_abun.div.add.prairie, pol_abun.div.prairie)
+
+summary(pol_abun.div.add.prairie)
+Anova(pol_abun.div.add.prairie, type = "II")
+confint(pol_abun.div.add.prairie)
+simres <- simulateResiduals(pol_abun.div.add.prairie)
+plot(simres) # not perfect
+
 ## Richness model ----
 # Variance ~= mean, so we should use poisson
 pol_groups_wide %>%
@@ -345,6 +363,42 @@ testOutliers(simres4, type = "bootstrap") # looks fine
 summary(pol_group_rich.add.div.zi)
 Anova(pol_group_rich.add.div.zi, type = "II")
 
+## Add prairie into random effects structure
+## Did not converge
+pol_group_rich.add.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson")
+pol_group_rich.add.div.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson")
+pol_group_rich.add.div.zi.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
+pol_group_rich.div.zi.prairie <- glmmTMB(pol_group_richness ~ trt*week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
+
+anova(pol_group_rich.add.prairie, pol_group_rich.add.div.prairie) # richness better
+anova(pol_group_rich.add.div.prairie, pol_group_rich.add.div.zi.prairie) # zi better
+
+AICctab(pol_group_rich.add.prairie, pol_group_rich.add.div.prairie, pol_group_rich.add.div.zi.prairie, pol_group_rich.div.zi.prairie)
+
+simres4 <- simulateResiduals(pol_group_rich.add.div.zi.prairie)
+plot(simres4) # Bad
+testOutliers(simres4, type = "bootstrap") # looks fine
+
+summary(pol_group_rich.add.div.zi.prairie)
+Anova(pol_group_rich.add.div.zi.prairie, type = "II")
+
+## Try prairie as fixed effect
+pol_group_rich.add.prairie2 <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + prairie + (1 | pair_id) + (1 | pair_id:plot_id), data = pol_groups_wide, family = "poisson")
+pol_group_rich.add.div.prairie2 <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + prairie + (1 | pair_id) + (1 | pair_id:plot_id), data = pol_groups_wide, family = "poisson")
+pol_group_rich.add.div.zi.prairie2 <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + prairie + (1 | pair_id) + (1 | pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
+pol_group_rich.div.zi.prairie2 <- glmmTMB(pol_group_richness ~ trt*week + scale(floral_abundance) + floral_richness + prairie + (1 | pair_id) + (1 | pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
+
+anova(pol_group_rich.add.prairie2, pol_group_rich.add.div.prairie2) # richness better
+anova(pol_group_rich.add.div.prairie2, pol_group_rich.add.div.zi.prairie2) # zi better
+
+AICctab(pol_group_rich.add.prairie2, pol_group_rich.add.div.prairie2, pol_group_rich.add.div.zi.prairie2, pol_group_rich.div.zi.prairie2)
+
+simres4 <- simulateResiduals(pol_group_rich.add.div.zi.prairie2)
+plot(simres4) # Bad
+testOutliers(simres4, type = "bootstrap") # looks fine
+
+summary(pol_group_rich.add.div.zi.prairie2)
+Anova(pol_group_rich.add.div.zi.prairie2, type = "II")
 
 ## Pollinator group model ----
 # Using filtered dataset removing groups where n < 20
