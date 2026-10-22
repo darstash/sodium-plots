@@ -225,6 +225,8 @@ pol_floral <- pol_floral %>%
   mutate(prairie = sub("_.*", "", pair_id))
 pol_groups_wide <- pol_groups_wide %>%
   mutate(prairie = sub("_.*", "", pair_id))
+pol_groups_filter <- pol_groups_filter%>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Exploratory plots ---- 
 # Pollinator abundance vs floral abundance
@@ -318,6 +320,7 @@ simres <- simulateResiduals(pol_abun.div.add)
 plot(simres) # not perfect
 
 ## Add prairie into random effects structure
+# Results do not qualitatively change
 pol_abun.div.prairie <- glmmTMB(pol_abundance ~ trt*week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
 pol_abun.div.add.prairie <- glmmTMB(pol_abundance ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_floral, family = "nbinom2", ziformula = ~ floral_abundance + week)
 
@@ -367,19 +370,21 @@ Anova(pol_group_rich.add.div.zi, type = "II")
 ## Did not converge
 pol_group_rich.add.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson")
 pol_group_rich.add.div.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson")
+pol_group_rich.add.div.zi1.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ 1)
 pol_group_rich.add.div.zi.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
+
 pol_group_rich.div.zi.prairie <- glmmTMB(pol_group_richness ~ trt*week + scale(floral_abundance) + floral_richness + (1 | prairie) + (1 | prairie:pair_id) + (1 | prairie:pair_id:plot_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
 
 anova(pol_group_rich.add.prairie, pol_group_rich.add.div.prairie) # richness better
 anova(pol_group_rich.add.div.prairie, pol_group_rich.add.div.zi.prairie) # zi better
 
-AICctab(pol_group_rich.add.prairie, pol_group_rich.add.div.prairie, pol_group_rich.add.div.zi.prairie, pol_group_rich.div.zi.prairie)
+AICctab(pol_group_rich.add.div.zi1.prairie, pol_group_rich.add.prairie, pol_group_rich.add.div.prairie, pol_group_rich.add.div.zi.prairie, pol_group_rich.div.zi.prairie)
 
 simres4 <- simulateResiduals(pol_group_rich.add.div.zi.prairie)
 plot(simres4) # Bad
 testOutliers(simres4, type = "bootstrap") # looks fine
 
-summary(pol_group_rich.add.div.zi.prairie)
+summary(pol_group_rich.add.div.zi.prairie) # Convergence problem
 Anova(pol_group_rich.add.div.zi.prairie, type = "II")
 
 ## Try prairie as fixed effect
@@ -397,7 +402,7 @@ simres4 <- simulateResiduals(pol_group_rich.add.div.zi.prairie2)
 plot(simres4) # Bad
 testOutliers(simres4, type = "bootstrap") # looks fine
 
-summary(pol_group_rich.add.div.zi.prairie2)
+summary(pol_group_rich.add.div.zi.prairie2) # Not significant
 Anova(pol_group_rich.add.div.zi.prairie2, type = "II")
 
 ## Pollinator group model ----
@@ -454,13 +459,33 @@ emtrends(pol_filter.div, revpairwise ~ trt|pollinator_groups, adjust = "tukey", 
 # Check model without trt*week interaction
 # Model checks
 simres2 <- simulateResiduals(pol_filter.div2)
-plot(simres2) # Looks ok
+plot(simres2) # Looks good
 
 # Model statistics
 summary(pol_filter.div2)
 Anova(pol_filter.div2, type = "III") # Two way interactions significant
 emmip(pol_filter.div2, trt ~ week | pollinator_groups, cov.reduce = range)
 joint_tests(pol_filter.div2, by = "pollinator_groups") # similar to three way interaction model
+
+## Add prairie as a random effect
+# Try model with floral diversity
+pol_filter.div.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(floral_abundance) + floral_richness + week + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
+pol_filter.div2.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups + pollinator_groups*week + scale(floral_abundance) + floral_richness + week + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_groups_filter, family = "nbinom2", ziformula =  ~ floral_abundance + week)
+
+anova(pol_filter.div2.prairie, pol_filter.div.prairie)
+AICctab(pol_filter.div2.prairie, pol_filter.div.prairie)
+
+summary(pol_filter.div.prairie)
+Anova(pol_filter.div.prairie, type = "III") # Three way interaction significant
+results <- Anova(pol_filter.div.prairie, type = "III")
+emmip(pol_filter.div.prairie, trt ~ week | pollinator_groups, cov.reduce = range)
+
+joint_tests(pol_filter.div.prairie, by = "pollinator_groups")
+emmeans(pol_filter.div.prairie, revpairwise ~ trt|pollinator_groups, adjust = "tukey")
+(exp(0.68180) - 1) * 100 # about 97.7% more honey bees in Na plots
+(exp(-0.57840) - 1) * 100 # about 44% less wasps in control plots
+emtrends(pol_filter.div.prairie, revpairwise ~ trt|pollinator_groups, adjust = "tukey", var = "week")
+
 
 ## Specific floral species ----
 # Pivot pollinator dataset longer to make each flower visit a row
@@ -551,7 +576,10 @@ pol_network_floral_sec_filter_zero <- pol_network_floral_sec_filter %>%
   ungroup() %>%
   complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Securigera_varia, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
   drop_na(pollinator_groups)
-  
+
+pol_network_floral_sec_filter_zero <- pol_network_floral_sec_filter_zero%>%
+  mutate(prairie = sub("_.*", "", pair_id))
+
 # Variance >> mean for Bombus and honey bee, NB?
 pol_network_floral_sec_filter_zero %>%
   group_by(pollinator_groups) %>%
@@ -570,11 +598,20 @@ plot(simres2) # Looks good!
 summary(pol_abun_sec_var_z.int)
 Anova(pol_abun_sec_var_z.int, type = "III")
 
+# With prairie in random effects
+pol_abun_sec_var_z.int.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Securigera_varia) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_sec_filter_zero, family = "nbinom2")
+
+summary(pol_abun_sec_var_z.int.prairie)
+Anova(pol_abun_sec_var_z.int.prairie, type = "III") # did not converge
+
 # Richness
 # Drop NA values to get richness 
 pol_network_floral_sec_rich <- pol_network_floral_sec_filter %>%
   group_by(plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, pol_group_richness, Securigera_varia, floral_abundance) %>%
   summarize(pol_group_richness = first(pol_group_richness))
+
+pol_network_floral_sec_rich <- pol_network_floral_sec_rich%>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Mean > variance
 pol_network_floral_sec_rich %>%
@@ -589,6 +626,12 @@ pol_abun_sec_var.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Sec
 
 AICctab(pol_abun_sec_var.rich, pol_abun_sec_var.rich.add)
 anova(pol_abun_sec_var.rich.add, pol_abun_sec_var.rich)
+
+summary(pol_abun_sec_var.rich.add)
+Anova(pol_abun_sec_var.rich.add, type = "II")
+
+# Add prairie in random effects
+pol_abun_sec_var.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Securigera_varia) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_sec_rich, family = "poisson")
 
 summary(pol_abun_sec_var.rich.add)
 Anova(pol_abun_sec_var.rich.add, type = "II")
@@ -614,6 +657,9 @@ pol_network_floral_mon_filter_zero <- pol_network_floral_mon_filter %>%
   complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Monarda_fistulosa, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
   drop_na(pollinator_groups)
 
+pol_network_floral_mon_filter_zero <- pol_network_floral_mon_filter_zero%>%
+  mutate(prairie = sub("_.*", "", pair_id))
+
 # Variance >> mean for most groups
 pol_network_floral_mon_filter_zero %>%
   group_by(pollinator_groups) %>%
@@ -636,11 +682,20 @@ testOutliers(simres2, type = "bootstrap")
 summary(pol_abun_mon.int)
 Anova(pol_abun_mon.int, type = "III")
 
+# Add prairie to random effects structure
+pol_abun_mon.int.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_mon_filter_zero, family = "nbinom2")
+
+summary(pol_abun_mon.int.prairie)
+Anova(pol_abun_mon.int.prairie, type = "III")
+
 # Richness
 # Drop NA values to get richness 
 pol_network_floral_mon_rich <- pol_network_floral_mon_filter %>%
   group_by(plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, pol_group_richness, Monarda_fistulosa, floral_abundance) %>%
   summarize(pol_group_richness = first(pol_group_richness))
+
+pol_network_floral_mon_rich <- pol_network_floral_mon_rich %>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Mean > variance
 pol_network_floral_mon_rich %>%
@@ -658,6 +713,12 @@ anova(pol_abun_mon.rich.add, pol_abun_mon.rich)
 
 summary(pol_abun_mon.rich.add)
 Anova(pol_abun_mon.rich.add, type = "II")
+
+# Add prairie to random effects structure
+pol_abun_mon.rich.add.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(Monarda_fistulosa) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_mon_rich, family = "poisson")
+
+summary(pol_abun_mon.rich.add.prairie)
+Anova(pol_abun_mon.rich.add.prairie, type = "II")
 
 ### Penstemon digitalis ----
 pol_network_floral_pen <- pol_network_floral %>%
@@ -679,6 +740,9 @@ pol_network_floral_pen_filter_zero <- pol_network_floral_pen_filter %>%
   ungroup() %>%
   complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Penstemon_digitalis, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
   drop_na(pollinator_groups)
+
+pol_network_floral_pen_filter_zero <- pol_network_floral_pen_filter_zero%>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Variance >> mean for some groups
 pol_network_floral_pen_filter_zero %>%
@@ -704,11 +768,20 @@ Anova(pol_abun_pen.int, type = "III")
 emmeans(pol_abun_pen.int, revpairwise ~ trt)
 (exp(0.609) - 1) * 100 # about 84% more in Na plots
 
+# Add prairie in random effects structure
+pol_abun_pen.int.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_pen_filter_zero, family = "nbinom2")
+
+summary(pol_abun_pen.int.prairie)
+Anova(pol_abun_pen.int.prairie, type = "III")
+
 # Richness
 # Drop NA values to get richness 
 pol_network_floral_pen_rich <- pol_network_floral_pen_filter %>%
   group_by(plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, pol_group_richness, Penstemon_digitalis, floral_abundance) %>%
   summarize(pol_group_richness = first(pol_group_richness))
+
+pol_network_floral_pen_rich <- pol_network_floral_pen_rich%>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Mean > variance
 pol_network_floral_pen_rich %>%
@@ -727,6 +800,10 @@ anova(pol_abun_pen.rich.add, pol_abun_pen.rich)
 summary(pol_abun_pen.rich.add)
 Anova(pol_abun_pen.rich.add, type = "II")
 (exp(0.33043) - 1) * 100 # about 39% more in Na plots
+
+# Add prairie in random effects structure
+pol_abun_pen.rich.add.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(Penstemon_digitalis) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_pen_rich, family = "poisson")
+summary(pol_abun_pen.rich.add.prairie) # did not converge
 
 ### Hypericum perforatum ----
 pol_network_floral_hyp <- pol_network_floral %>%
@@ -749,6 +826,9 @@ pol_network_floral_hyp_filter_zero <- pol_network_floral_hyp_filter %>%
   complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Hypericum_perforatum, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
   drop_na(pollinator_groups)
 
+pol_network_floral_hyp_filter_zero <- pol_network_floral_hyp_filter_zero%>%
+  mutate(prairie = sub("_.*", "", pair_id))
+
 # Variance >> mean for some groups
 pol_network_floral_hyp_filter_zero %>%
   group_by(pollinator_groups) %>%
@@ -768,6 +848,12 @@ plot(simres2) # Good!
 
 summary(pol_abun_hyp.int)
 Anova(pol_abun_hyp.int, type = "III")
+
+# Add prairie to random effects structure
+pol_abun_hyp.int.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_hyp_filter_zero, family = "nbinom2")
+
+summary(pol_abun_hyp.int.prairie)
+Anova(pol_abun_hyp.int.prairie, type = "III")
 
 # Richness
 # Drop NA values to get richness 
