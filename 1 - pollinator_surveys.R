@@ -228,6 +228,29 @@ pol_groups_wide <- pol_groups_wide %>%
 pol_groups_filter <- pol_groups_filter%>%
   mutate(prairie = sub("_.*", "", pair_id))
 
+# Get plant diversity for each plot
+floral_wide %>%
+  group_by(plot_id) %>%
+  summarize(mean_abun = mean(floral_abundance),
+            sd_abun = sd(floral_abundance),
+            #min_abun = min(floral_abundance),
+            #max_abun = max(floral_abundance),
+            mean_rich = mean(floral_richness),
+            sd_rich = sd(floral_richness),
+            #min_rich = min(floral_richness),
+            #max_rich = max(floral_richness),
+            mean_div = mean(floral_shannon),
+            sd_div = sd(floral_shannon))
+           #min_div = min(floral_shannon),
+            #max_div = max(floral_shannon))
+
+# Get dominant species for each plot (by total floral abundance)
+dominants <- floral_wide %>%
+  group_by(plot_id) %>%
+  summarise(across(Penstemon_digitalis:Verbena_urticifolia, ~sum(.x, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(max_column = names(select(., Penstemon_digitalis:Verbena_urticifolia))[
+    max.col(select(., Penstemon_digitalis:Verbena_urticifolia), ties.method = "first")])
+
 # Exploratory plots ---- 
 # Pollinator abundance vs floral abundance
 pol_floral %>%
@@ -826,7 +849,7 @@ pol_network_floral_hyp_filter_zero <- pol_network_floral_hyp_filter %>%
   complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Hypericum_perforatum, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
   drop_na(pollinator_groups)
 
-pol_network_floral_hyp_filter_zero <- pol_network_floral_hyp_filter_zero%>%
+pol_network_floral_hyp_filter_zero <- pol_network_floral_hyp_filter_zero %>%
   mutate(prairie = sub("_.*", "", pair_id))
 
 # Variance >> mean for some groups
@@ -861,6 +884,9 @@ pol_network_floral_hyp_rich <- pol_network_floral_hyp_filter %>%
   group_by(plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, pol_group_richness, Hypericum_perforatum, floral_abundance) %>%
   summarize(pol_group_richness = first(pol_group_richness))
 
+pol_network_floral_hyp_rich <- pol_network_floral_hyp_rich %>%
+  mutate(prairie = sub("_.*", "", pair_id))
+
 # Mean > variance
 pol_network_floral_hyp_rich %>%
   group_by(trt) %>%
@@ -882,6 +908,12 @@ plot(simres2) # ok
 summary(pol_abun_hyp.rich.add)
 Anova(pol_abun_hyp.rich.add, type = "II")
 
+# Add prairie to random effects structure
+pol_abun_hyp.rich.add.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(Hypericum_perforatum) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_hyp_rich, family = "poisson")
+
+summary(pol_abun_hyp.rich.add.prairie)
+Anova(pol_abun_hyp.rich.add.prairie, type = "II")
+
 ### Erigeron annuus ----
 pol_network_floral_eri <- pol_network_floral %>%
   filter(flower_sp == "Erigeron annuus" | (Erigeron_annuus > 0 & is.na(flower_sp)))
@@ -892,8 +924,9 @@ pol_network_floral_eri %>%
   summarize(sum = sum(pol_abundance))
 
 # Remove pol groups with less than 20 interactions
+# Must remove Bombus (n = 22) because of complete separation (ns with bombus included)
 pol_network_floral_eri_filter <- pol_network_floral_eri %>%
-  filter((pollinator_groups == "Bombus" | pollinator_groups == "fly" | pollinator_groups == "striped_sweat_bee" | pollinator_groups == "tiny_dark_bee" | pollinator_groups == "wasp") %>% replace_na(TRUE))
+  filter((pollinator_groups == "fly" | pollinator_groups == "striped_sweat_bee" | pollinator_groups == "tiny_dark_bee" | pollinator_groups == "wasp") %>% replace_na(TRUE))
 
 # Fill with zeros
 pol_network_floral_eri_filter$unique_id <- paste(pol_network_floral_eri_filter$plot_id, pol_network_floral_eri_filter$date)
@@ -902,6 +935,9 @@ pol_network_floral_eri_filter_zero <- pol_network_floral_eri_filter %>%
   ungroup() %>%
   complete(nesting(unique_id, plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, Erigeron_annuus, floral_abundance), pollinator_groups, fill = list(pol_abundance = 0)) %>%
   drop_na(pollinator_groups)
+
+pol_network_floral_eri_filter_zero <- pol_network_floral_eri_filter_zero %>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Variance >> mean for some groups
 pol_network_floral_eri_filter_zero %>%
@@ -923,11 +959,18 @@ plot(simres2) # Good!
 summary(pol_abun_eri.int)
 Anova(pol_abun_eri.int, type = "III")
 
+# Add prairie to random effects structure
+pol_abun_eri.int.prairie <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + scale(Erigeron_annuus) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_eri_filter_zero, family = "nbinom2")
+summary(pol_abun_eri.int.prairie)
+
 # Richness
 # Drop NA values to get richness 
 pol_network_floral_eri_rich <- pol_network_floral_eri_filter %>%
   group_by(plot_id, pair_id, trt, date, week, start_time, end_time, active_time, surveyor, temp, wind, cloud, flower_sp, pol_group_richness, Erigeron_annuus, floral_abundance) %>%
   summarize(pol_group_richness = first(pol_group_richness))
+
+pol_network_floral_eri_rich <- pol_network_floral_eri_rich %>%
+  mutate(prairie = sub("_.*", "", pair_id))
 
 # Mean > variance
 pol_network_floral_eri_rich %>%
@@ -950,6 +993,11 @@ plot(simres2) # ok
 summary(pol_abun_eri.rich.add)
 Anova(pol_abun_eri.rich.add, type = "II")
 
+# Add prairie in random effects structure
+pol_abun_eri.rich.add.prairie <- glmmTMB(pol_group_richness ~ trt + week + scale(Erigeron_annuus) + scale(floral_abundance) + (1|prairie) + (1|prairie:pair_id) + (1|prairie:pair_id:plot_id), data = pol_network_floral_eri_rich, family = "poisson")
+
+summary(pol_abun_eri.rich.add.prairie)
+Anova(pol_abun_eri.rich.add.prairie, type = "II")
 
 # Plot models ----
 # Abundance model
@@ -1125,7 +1173,7 @@ eri.plot <- ggplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.title.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
-  scale_x_discrete(labels = c("bumble bee", "fly", "striped sweat bee", "tiny dark bee", "wasp"))
+  scale_x_discrete(labels = c("fly", "striped sweat bee", "tiny dark bee", "wasp"))
 
 pred.eri <- ggpredict(pol_abun_eri.rich.add, terms = "trt")
 eri_rich.plot <- ggplot() +
