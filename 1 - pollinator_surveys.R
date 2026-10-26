@@ -228,7 +228,8 @@ pol_groups_wide <- pol_groups_wide %>%
 pol_groups_filter <- pol_groups_filter%>%
   mutate(prairie = sub("_.*", "", pair_id))
 
-# Get plant diversity for each plot
+## Plant diversity summary ----
+# Controlling for diversity and abundance in models, but check here if there are major differences
 floral_wide %>%
   group_by(plot_id) %>%
   summarize(mean_abun = mean(floral_abundance),
@@ -243,6 +244,33 @@ floral_wide %>%
             sd_div = sd(floral_shannon))
            #min_div = min(floral_shannon),
             #max_div = max(floral_shannon))
+
+# Difference in abundance between treatments?
+abun <- glmmTMB(floral_abundance ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide, family = "nbinom2")
+abun.pois <- glmmTMB(floral_abundance ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide, family = "poisson")
+anova(abun.pois, abun)
+AICctab(abun.pois, abun)
+summary(abun)
+simres <- simulateResiduals(abun)
+plot(simres) # Great
+
+# Difference in richness between treatments?
+rich <- glmmTMB(floral_richness ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide, family = "nbinom2")
+rich.pois <- glmmTMB(floral_richness ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide, family = "poisson")
+rich.pois.zi <- glmmTMB(floral_richness ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide, family = "poisson", ziformula = ~1)
+anova(rich.pois, rich.pois.zi, rich)
+AICctab(rich.pois, rich.pois.zi, rich)
+summary(rich.pois)
+simres <- simulateResiduals(rich.pois)
+plot(simres) # not great, but not crazy - could be due to sample size
+
+# Difference in diversity between treatments?
+div <- glmmTMB(floral_shannon ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide)
+div.zi <- glmmTMB(floral_shannon ~ trt + (1|pair_id) + (1|plot_id:pair_id), data = floral_wide, ziformula = ~1)
+anova(div, div.zi)
+summary(div)
+simres <- simulateResiduals(div)
+plot(simres) # Great
 
 # Get dominant species for each plot (by total floral abundance)
 dominants <- floral_wide %>%
