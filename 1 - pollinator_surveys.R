@@ -1321,6 +1321,16 @@ pol.adon.rmout2 # trt and floral abundance still significant, floral richness no
 pol.adon.rmout3 <- adonis2(comm.data2[13:44] ~ floral_abundance + trt, method = "bray", strata = comm.data2$pair_id, by = "margin", data = comm.data2, permutations = 4999)
 pol.adon.rmout3 # trt and floral abundance significant
 
+# What community differences driving differences between treatments?
+simper_results_r <- with(
+  comm.data2,
+  simper(comm.data2[13:44], group = trt,
+         permutations = h.out))
+
+summary(simper_results_r)
+simper_summary_df <- as.data.frame(
+  summary(simper_results_r)$control_sodium)
+
 ## Floral communities ----
 # Subset community data from pol_floral
 floral.comm.data <- floral_wide[rowSums(floral_wide[7:34])>0,]
