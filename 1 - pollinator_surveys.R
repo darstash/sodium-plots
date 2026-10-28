@@ -368,7 +368,7 @@ summary(pol_abun.div.add)
 Anova(pol_abun.div.add, type = "II")
 confint(pol_abun.div.add)
 simres <- simulateResiduals(pol_abun.div.add)
-plot(simres) # not perfect
+plot(simres) # not perfect, but likely signif. due to large sample size
 
 ## Add prairie into random effects structure
 # Results do not qualitatively change
@@ -394,7 +394,7 @@ pol_groups_wide %>%
 # Not zero inflated, probably
 barplot(table(cut(pol_groups_wide$pol_group_richness, c(0, seq(1, 8, 1)), right = FALSE)), space = 0)
 
-# Add floral richness
+# NB doesn't even converge
 pol_group_rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson")
 pol_group_rich.add.div <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson")
 pol_group_rich.add.div.zi <- glmmTMB(pol_group_richness ~ trt + week + scale(floral_abundance) + floral_richness + (1|pair_id) + (1|plot_id:pair_id), data = pol_groups_wide, family = "poisson", ziformula = ~ floral_abundance + week)
@@ -410,8 +410,8 @@ summary(pol_group_rich.div.zi) # drop interaction for better fitting model
 
 # Model check
 simres4 <- simulateResiduals(pol_group_rich.add.div.zi)
-plot(simres4) # Bad
-testOutliers(simres4, type = "bootstrap") # looks fine
+plot(simres4) # Bad, but quantile test probably due to large sample size... visually looks good
+testDispersion(simres4) # underdispersion, not as concerning. move forward
 
 ### Final model stats ----
 summary(pol_group_rich.add.div.zi)
@@ -491,7 +491,7 @@ AICctab(pol_filter.pois, pol_filter.nb, pol_filter.nb.int.zi3, pol_filter.nb.int
 
 # Model checks
 simres2 <- simulateResiduals(pol_filter.div)
-plot(simres2) # Looks ok, some outliers in residual vs predicted
+plot(simres2) # Looks good, some outliers but testOutlier() needs to be rerun with bootstrap
 testOutliers(simres2, type = "bootstrap") # not significant here
 
 ### Final model stats ----
@@ -644,7 +644,7 @@ pol_abun_sec_var_z.int <- glmmTMB(pol_abundance ~ trt*pollinator_groups*week + s
 
 # Model checks
 simres2 <- simulateResiduals(pol_abun_sec_var_z.int)
-plot(simres2) # Looks good!
+plot(simres2) # Looks good, one red line, but NS
 
 summary(pol_abun_sec_var_z.int)
 Anova(pol_abun_sec_var_z.int, type = "III")
@@ -687,6 +687,7 @@ pol_abun_sec_var.rich.add <- glmmTMB(pol_group_richness ~ trt + week + scale(Sec
 summary(pol_abun_sec_var.rich.add)
 Anova(pol_abun_sec_var.rich.add, type = "II")
 
+
 ### Monarda fistulosa ----
 pol_network_floral_mon <- pol_network_floral %>%
   filter(flower_sp == "Monarda fistulosa" | (Monarda_fistulosa > 0 & is.na(flower_sp)))
@@ -727,8 +728,7 @@ AICctab(pol_abun_mon, pol_abun_mon.pois, pol_abun_mon.int)
 
 # Model checks
 simres2 <- simulateResiduals(pol_abun_mon.int)
-plot(simres2) # Ok
-testOutliers(simres2, type = "bootstrap")
+plot(simres2) # Great!
 
 summary(pol_abun_mon.int)
 Anova(pol_abun_mon.int, type = "III")
