@@ -1064,8 +1064,8 @@ group.plot <- ggplot() +
   scale_x_discrete(labels = c("bumble bee", "carpenter bee", "fly", "green sweat bee", "hairy belly bee", "honey bee", "lepidopteran", "medium dark bee", "striped sweat bee", "tiny dark bee", "wasp"))
 
 ## Figure 2 ----
-pdf("plot_fig_2_report.pdf", width = 7, height = 7)
-(abun.plot + rich.plot) / group.plot + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A') 
+pdf("plot_fig_2_report_r1.pdf", width = 7.08, height = 7.08)
+(abun.plot + rich.plot) / group.plot + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A', title = "Figure 2", theme = theme(plot.title = element_text(size = 10)))
 dev.off()
 
 ## Figure S3 ----
@@ -1089,13 +1089,16 @@ sec_var.plot <- ggplot() +
   geom_errorbar(data = pred.sec.abun, aes(x = x, ymin = conf.low, ymax = conf.high, color = group), width = 0, position = position_dodge(width = 0.5)) +
   scale_color_manual(values = c("control" = "#e41a1c","sodium" = "#377eb8")) +
   theme_bw() +
-  labs(y = "Pollinator abundance", color = "Treatment", x = "", shape = "Treatment", title = "Securigera varia") +
+  labs(y = "Pollinator abundance", color = NULL, x = "", shape = NULL, title = "Securigera varia") +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(plot.title = element_text(size = 12, face = "italic")) +
   theme(axis.title.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
-  scale_x_discrete(labels = c("bumble bee", "fly", "honey bee", "tiny dark bee"))
+  scale_x_discrete(labels = c("bumble bee", "fly", "honey bee", "tiny dark bee")) +
+  theme(legend.position = "top", 
+        legend.direction = "horizontal",
+        legend.box = "horizontal")
 
 pred.sec <- ggpredict(pol_abun_sec_var.rich.add, terms = "trt")
 sec_var_rich.plot <- ggplot() +
@@ -1216,11 +1219,24 @@ eri_rich.plot <- ggplot() +
   theme(axis.title.y = element_blank())
 
 ## Figure 3 ----
-pdf("plot_fig_4.2.pdf", width = 11, height = 6)
-mon.plot + pen.plot + sec_var.plot + eri.plot + hyp.plot + mon_rich.plot + pen_rich.plot + sec_var_rich.plot + eri_rich.plot + hyp_rich.plot + plot_layout(ncol = 5) + plot_layout(guides = 'collect') + plot_annotation(tag_levels = "A") & theme(legend.position = "none") & 
-  theme(plot.margin = margin(2, 2, 2, 2, unit = "pt"))
-dev.off()
+legend <- get_legend(sec_var.plot)
+sec_var.plot <- sec_var.plot + theme(legend.position = "none")
 
+plot.3 <- mon.plot + pen.plot + sec_var.plot + eri.plot + hyp.plot + mon_rich.plot + pen_rich.plot + sec_var_rich.plot + eri_rich.plot + hyp_rich.plot + plot_layout(ncol = 5) + plot_layout(guides = 'collect') + plot_annotation(tag_levels = "A") & theme(legend.position = "none") & 
+  theme(plot.margin = margin(2, 2, 2, 2, unit = "pt"))
+
+plot.3.1 <- cowplot::plot_grid(
+  ggplot() + theme_void() +
+    labs(title = "Figure 3") +
+    theme(plot.title = element_text(size = 10, hjust = 0)),
+  legend,
+  plot.3,
+  ncol = 1,
+  rel_heights = c(0.04, 0.05, 1))
+
+pdf("plot_fig_3_report_r1.pdf", width = 11, height = 6)
+plot.3.1
+dev.off()
 
 # NMDS analysis ----
 
