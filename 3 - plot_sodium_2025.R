@@ -213,12 +213,15 @@ leaf.plot <- leaf.plot + theme(legend.position = "none")
 plot.nl <- soil.plot + leaf.plot + nectar.plot + cor.plot & plot_annotation(tag_levels = 'A')
 
 plot.wl <- cowplot::plot_grid(
+  ggplot() + theme_void() +
+    labs(title = "Figure 1") +
+    theme(plot.title = element_text(size = 10, hjust = 0)),
   legend,
   plot.nl,
   ncol = 1,
-  rel_heights = c(0.05, 1))
+  rel_heights = c(0.04, 0.05, 1))
 
-pdf("plot_fig_1.pdf", width = 7, height = 7)
+pdf("plot_fig_1_report_r1.pdf", width = 7.08, height = 7.08)
 plot.wl
 dev.off()
 
