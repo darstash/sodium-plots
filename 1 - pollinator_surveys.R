@@ -1064,7 +1064,7 @@ group.plot <- ggplot() +
   scale_x_discrete(labels = c("bumble bee", "carpenter bee", "fly", "green sweat bee", "hairy belly bee", "honey bee", "lepidopteran", "medium dark bee", "striped sweat bee", "tiny dark bee", "wasp"))
 
 ## Figure 2 ----
-pdf("plot_fig_2_report_r1.pdf", width = 7.08, height = 7.08)
+pdf("plot_fig_2_report_r1.1.pdf", width = 7.08, height = 8.66)
 (abun.plot + rich.plot) / group.plot + plot_layout(guides = 'collect') & plot_annotation(tag_levels = 'A', title = "Figure 2", theme = theme(plot.title = element_text(size = 10)))
 dev.off()
 
