@@ -16,7 +16,7 @@ Run the R scripts in the order that they are numbered (see below).
 3 - plot_sodium_2025.R (requires 2 - plot_sodium_2024.R)
 
 # Usage
-Main analyses were conducted using R version 4.4.1 (2024-06-14) (R Core Team 2021). For package versions see sessionInfo.txt.  
+Main analyses were conducted using R version 4.6.1 (2026-06-24) (R Core Team 2026). For package versions see sessionInfo.txt.  
 
 # Authorship statement
 All code was created by Ashley L. Darst (darstash@msu.edu). Bonnie E. Johnson and Nick M. Haddad are co-authors on the submitted manuscript.
